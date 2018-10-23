@@ -11,6 +11,7 @@
 
     <script src="http://www.chartjs.org/dist/2.7.3/Chart.bundle.js"></script>
 	<script src="http://www.chartjs.org/samples/latest/utils.js"></script>
+	<script src="https://d3js.org/d3.v4.min.js"></script>
 	<style>
 	canvas {
 		-moz-user-select: none;
@@ -331,24 +332,42 @@
     -->
 
 <script>
+
 	var usage_section = [];
 	for(var i = 150; i <= 15000; i=i+100){
 		console.log(i);
 		usage_section.push(i);
 	}
 
+	d3.csv("/public/data.csv", type, function(error,data){
+        if (error) throw error;
 
-		//var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-		var MONTHS = usage_section;
-		var color = Chart.helpers.color;
-		var barChartData = {
-			labels: usage_section,
-			datasets: [{
-				label: '9월',
-				backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
-				borderColor: window.chartColors.red,
-				borderWidth: 1,
-				data: [
+        data.forEach(function(d){
+
+			usage_section
+			console.log(d.phone + "," + Number(d.usage));
+
+
+		});
+    });
+
+	function type(d){
+		d.phone = String(d.phone);
+		d.usage = parseFloat(d.usage);
+		return d;
+	}
+
+	//var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+	var MONTHS = usage_section;
+	var color = Chart.helpers.color;
+	var barChartData = {
+		labels: usage_section,
+		datasets: [{
+			label: '9월',
+			backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+			borderColor: window.chartColors.red,
+			borderWidth: 1,
+			data: [
 //					randomScalingFactor(),
 //					randomScalingFactor(),
 //					randomScalingFactor(),
@@ -356,14 +375,14 @@
 //					randomScalingFactor(),
 //					randomScalingFactor(),
 //					randomScalingFactor()
-					75,34,65,64,45,34,64,34,67,76,45,45,76,43,75,76
-				]
-			}, {
-				label: '10월',
-				backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
-				borderColor: window.chartColors.blue,
-				borderWidth: 1,
-				data: [
+				75,34,65,64,45,34,64,34,67,76,45,45,76,43,75,76
+			]
+		}, {
+			label: '10월',
+			backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+			borderColor: window.chartColors.blue,
+			borderWidth: 1,
+			data: [
 //					randomScalingFactor(),
 //					randomScalingFactor(),
 //					randomScalingFactor(),
@@ -371,94 +390,94 @@
 //					randomScalingFactor(),
 //					randomScalingFactor(),
 //					randomScalingFactor()
-					76,45,45,76,43,75,76, 75,34,65,64,45,34,64,34,67,
+				76,45,45,76,43,75,76, 75,34,65,64,45,34,64,34,67,
 
-				]
-			}]
+			]
+		}]
 
-		};
+	};
 
-		window.onload = function() {
-			var ctx = document.getElementById('canvas').getContext('2d');
-			window.myBar = new Chart(ctx, {
-				type: 'bar',
-				data: barChartData,
-				options: {
-					responsive: true,
-					legend: {
-						position: 'top',
-					},
-					title: {
-						display: true,
-						text: 'Chart.js Bar Chart'
-					}
+	window.onload = function() {
+		var ctx = document.getElementById('canvas').getContext('2d');
+		window.myBar = new Chart(ctx, {
+			type: 'bar',
+			data: barChartData,
+			options: {
+				responsive: true,
+				legend: {
+					position: 'top',
+				},
+				title: {
+					display: true,
+					text: 'Chart.js Bar Chart'
 				}
-			});
-
-		};
-
-
-		/*
-		document.getElementById('randomizeData').addEventListener('click', function() {
-			var zero = Math.random() < 0.2 ? true : false;
-			barChartData.datasets.forEach(function(dataset) {
-				dataset.data = dataset.data.map(function() {
-					return zero ? 0.0 : randomScalingFactor();
-				});
-
-			});
-			window.myBar.update();
-		});
-
-		var colorNames = Object.keys(window.chartColors);
-		document.getElementById('addDataset').addEventListener('click', function() {
-			var colorName = colorNames[barChartData.datasets.length % colorNames.length];
-			var dsColor = window.chartColors[colorName];
-			var newDataset = {
-				label: 'Dataset ' + (barChartData.datasets.length + 1),
-				backgroundColor: color(dsColor).alpha(0.5).rgbString(),
-				borderColor: dsColor,
-				borderWidth: 1,
-				data: []
-			};
-
-			for (var index = 0; index < barChartData.labels.length; ++index) {
-				newDataset.data.push(randomScalingFactor());
-			}
-
-			barChartData.datasets.push(newDataset);
-			window.myBar.update();
-		});
-
-		document.getElementById('addData').addEventListener('click', function() {
-			if (barChartData.datasets.length > 0) {
-				var month = MONTHS[barChartData.labels.length % MONTHS.length];
-				barChartData.labels.push(month);
-
-				for (var index = 0; index < barChartData.datasets.length; ++index) {
-					// window.myBar.addData(randomScalingFactor(), index);
-					barChartData.datasets[index].data.push(randomScalingFactor());
-				}
-
-				window.myBar.update();
 			}
 		});
 
-		document.getElementById('removeDataset').addEventListener('click', function() {
-			barChartData.datasets.pop();
-			window.myBar.update();
-		});
+	};
 
-		document.getElementById('removeData').addEventListener('click', function() {
-			barChartData.labels.splice(-1, 1); // remove the label first
 
-			barChartData.datasets.forEach(function(dataset) {
-				dataset.data.pop();
+	/*
+	document.getElementById('randomizeData').addEventListener('click', function() {
+		var zero = Math.random() < 0.2 ? true : false;
+		barChartData.datasets.forEach(function(dataset) {
+			dataset.data = dataset.data.map(function() {
+				return zero ? 0.0 : randomScalingFactor();
 			});
 
-			window.myBar.update();
 		});
-		*/
+		window.myBar.update();
+	});
+
+	var colorNames = Object.keys(window.chartColors);
+	document.getElementById('addDataset').addEventListener('click', function() {
+		var colorName = colorNames[barChartData.datasets.length % colorNames.length];
+		var dsColor = window.chartColors[colorName];
+		var newDataset = {
+			label: 'Dataset ' + (barChartData.datasets.length + 1),
+			backgroundColor: color(dsColor).alpha(0.5).rgbString(),
+			borderColor: dsColor,
+			borderWidth: 1,
+			data: []
+		};
+
+		for (var index = 0; index < barChartData.labels.length; ++index) {
+			newDataset.data.push(randomScalingFactor());
+		}
+
+		barChartData.datasets.push(newDataset);
+		window.myBar.update();
+	});
+
+	document.getElementById('addData').addEventListener('click', function() {
+		if (barChartData.datasets.length > 0) {
+			var month = MONTHS[barChartData.labels.length % MONTHS.length];
+			barChartData.labels.push(month);
+
+			for (var index = 0; index < barChartData.datasets.length; ++index) {
+				// window.myBar.addData(randomScalingFactor(), index);
+				barChartData.datasets[index].data.push(randomScalingFactor());
+			}
+
+			window.myBar.update();
+		}
+	});
+
+	document.getElementById('removeDataset').addEventListener('click', function() {
+		barChartData.datasets.pop();
+		window.myBar.update();
+	});
+
+	document.getElementById('removeData').addEventListener('click', function() {
+		barChartData.labels.splice(-1, 1); // remove the label first
+
+		barChartData.datasets.forEach(function(dataset) {
+			dataset.data.pop();
+		});
+
+		window.myBar.update();
+	});
+	*/
 	</script>
   </body>
 </html>
