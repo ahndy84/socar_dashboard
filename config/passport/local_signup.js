@@ -12,7 +12,7 @@ module.exports = new LocalStrategy({
 
 	    // findOne 메소드가 blocking되지 않도록 하고 싶은 경우, async 방식으로 변경
 	    process.nextTick(function() {
-	    	var database = app.get('database');
+	    	var database = req.app.get('database');
 		    database.UserModel.findOne({ 'email' :  email }, function(err, user) {
 		        // 에러 발생 시
 		        if (err) {

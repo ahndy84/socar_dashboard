@@ -32,7 +32,7 @@ module.exports = function(router, passport){
 	// 인증 확인 후, 성공 시 /profile 리다이렉트, 실패 시 /signup으로 리다이렉트함
 	// 인증 실패 시 검증 콜백에서 설정한 플래시 메시지가 응답 페이지에 전달되도록 함
 	router.route('/signup').post(passport.authenticate('local-signup', {
-    	successRedirect : '/profile',
+    	successRedirect : '/main',
     	failureRedirect : '/signup',
     	failureFlash : true
 	}));
