@@ -9,9 +9,15 @@
 
     <title>SOCAR 시각화통계</title>
 
+    <!-- j Query -->
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+
+    <!-- xlsx -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.10.3/xlsx.full.min.js"></script>
+
     <script src="http://www.chartjs.org/dist/2.7.3/Chart.bundle.js"></script>
 	<script src="http://www.chartjs.org/samples/latest/utils.js"></script>
-	<script src="https://d3js.org/d3.v4.min.js"></script>
+
 	<style>
 	canvas {
 		-moz-user-select: none;
@@ -27,6 +33,7 @@
     <link href="http://getbootstrap.com/docs/4.1/examples/dashboard/dashboard.css" rel="stylesheet">
 
     <!-- d3 -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://d3js.org/d3-collection.v1.min.js"></script>
 	<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
 	<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
@@ -79,6 +86,9 @@
 		  </div>
 			<button id="addDataset">전월 비교</button>
 			<button id="removeDataset">비교 해제</button>
+
+       	<input type="file" id="my_file_input" />
+    <div id='my_file_output'></div>
         </main>
       </div>
     </div>
@@ -254,72 +264,105 @@
 		d.usage_last_month = parseFloat(d.usage_last_month);
 		return d;
 	}
+	</script>
+
+<script>
+var rABS = true; // T : 바이너리, F : 어레이 버퍼
+
+// 어레이 버퍼를 처리한다 ( 오직 readAsArrayBuffer 데이터만 가능하다 )
+function fixdata(data) {
+    var o = "", l = 0, w = 10240;
+    for(; l<data.byteLength/w; ++l) o+=String.fromCharCode.apply(null,new Uint8Array(data.slice(l*w,l*w+w)));
+    o+=String.fromCharCode.apply(null, new Uint8Array(data.slice(l*w)));
+    return o;
+}
+
+// 데이터를 바이너리 스트링으로 얻는다.
+function getConvertDataToBin($data){
+    var arraybuffer = $data;
+    var data = new Uint8Array(arraybuffer);
+    var arr = new Array();
+    for(var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
+    var bstr = arr.join("");
+
+    return bstr;
+}
+function handleFile(e) {
+    var files = e.target.files;
+    var i,f;
+    for (i = 0; i != files.length; ++i) {
+        f = files[i];
+        var reader = new FileReader();
+        var name = f.name;
+
+        reader.onload = function(e) {
+            var data = e.target.result;
+
+            var workbook;
+
+            if(rABS) {
+                /* if binary string, read with type 'binary' */
+                workbook = XLSX.read(data, {type: 'binary'});
+            } else {
+                /* if array buffer, convert to base64 */
+                var arr = fixdata(data);
+                workbook = XLSX.read(btoa(arr), {type: 'base64'});
+            }//end. if
+
+            /* 워크북 처리 */
+			//var first_sheet_name = workbook.SheetNames[0];
+
+			/* Get worksheet */
+			var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+			var cell_date_info = worksheet['U'+2].v;
+
+			var patten_trim = / /gi;
+			var year = cell_date_info.substring(0, cell_date_info.indexOf('.')).replace(/ /gi, "");
+			year = year.replace(patten_trim, "");
+			var month = cell_date_info.substring(cell_date_info.indexOf('.')+1, cell_date_info.lastIndexOf('.')).replace(/ /gi, "");
+			month = month.replace(patten_trim, "");
+
+			console.log("year : " + year + "month : " + month);
+
+			for(var i = 5; i < 100; i++){
+				/* Find desired cell */
+				var cell_phone = worksheet['B'+i];
+				var cell_usage = worksheet['AA'+i];
+
+				/* Get the value */
+				var phone = (cell_phone ? cell_phone.v : undefined);
+				var usage = (cell_usage ? cell_usage.v : undefined);
+
+				if((phone != undefined && phone != "고객번호") &&
+				   (usage != undefined && usage.length > 0)){
+					usage = usage.replace(/MB|\,/gi, '');
+					console.log('phone : ' + phone + '  usage : ' + usage);
+				}
 
 
-
-
-
-	/*
-	document.getElementById('randomizeData').addEventListener('click', function() {
-		var zero = Math.random() < 0.2 ? true : false;
-		barChartData.datasets.forEach(function(dataset) {
-			dataset.data = dataset.data.map(function() {
-				return zero ? 0.0 : randomScalingFactor();
-			});
-
-		});
-		window.myBar.update();
-	});
-
-	var colorNames = Object.keys(window.chartColors);
-	document.getElementById('addDataset').addEventListener('click', function() {
-		var colorName = colorNames[barChartData.datasets.length % colorNames.length];
-		var dsColor = window.chartColors[colorName];
-		var newDataset = {
-			label: 'Dataset ' + (barChartData.datasets.length + 1),
-			backgroundColor: color(dsColor).alpha(0.5).rgbString(),
-			borderColor: dsColor,
-			borderWidth: 1,
-			data: []
-		};
-
-		for (var index = 0; index < barChartData.labels.length; ++index) {
-			newDataset.data.push(randomScalingFactor());
-		}
-
-		barChartData.datasets.push(newDataset);
-		window.myBar.update();
-	});
-
-	document.getElementById('addData').addEventListener('click', function() {
-		if (barChartData.datasets.length > 0) {
-			var month = MONTHS[barChartData.labels.length % MONTHS.length];
-			barChartData.labels.push(month);
-
-			for (var index = 0; index < barChartData.datasets.length; ++index) {
-				// window.myBar.addData(randomScalingFactor(), index);
-				barChartData.datasets[index].data.push(randomScalingFactor());
 			}
 
-			window.myBar.update();
-		}
-	});
 
-	document.getElementById('removeDataset').addEventListener('click', function() {
-		barChartData.datasets.pop();
-		window.myBar.update();
-	});
+        }; //end onload
 
-	document.getElementById('removeData').addEventListener('click', function() {
-		barChartData.labels.splice(-1, 1); // remove the label first
+        if(rABS) reader.readAsBinaryString(f);
+        else reader.readAsArrayBuffer(f);
 
-		barChartData.datasets.forEach(function(dataset) {
-			dataset.data.pop();
-		});
+    }//end. for
+}
 
-		window.myBar.update();
-	});
-	*/
-	</script>
-  </body>
+	var input_dom_element;
+
+$(function() {
+    input_dom_element = document.getElementById('my_file_input');
+    if(input_dom_element.addEventListener) {
+        input_dom_element.addEventListener('change', handleFile, false);
+    }
+});
+
+//http://sheetjs.com/
+//https://github.com/SheetJS/js-xls
+</script>
+</body>
 </html>

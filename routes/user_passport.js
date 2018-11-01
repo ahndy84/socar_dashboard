@@ -4,7 +4,7 @@ module.exports = function(router, passport){
 	// 홈 화면 - index.ejs 템플릿을 이용해 홈 화면이 보이도록 함
 	router.route('/').get(function(req, res) {
 		console.log('/ 패스 요청됨.');
-		res.render('index.ejs');
+		res.redirect('/login');
 	});
 
 	// 로그인 화면 - login.ejs 템플릿을 이용해 로그인 화면이 보이도록 함
@@ -63,7 +63,7 @@ module.exports = function(router, passport){
 
 	// 메인 화면 - 로그인 여부를 확인할 수 있도록 먼저 isLoggedIn 미들웨어 실행
 	router.route('/main').get(function(req, res) {
-		console.log('/profile 패스 요청됨.');
+		console.log('/main 패스 요청됨.');
 
     	// 인증된 경우, req.user 객체에 사용자 정보 있으며, 인증안된 경우 req.user는 false값임
     	console.log('req.user 객체의 값');
