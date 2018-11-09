@@ -1,113 +1,163 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="https://www.socar.kr/static/favicon.ico">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link rel="icon" href="https://www.socar.kr/static/favicon.ico">
 
-    <title>SOCAR 시각화통계</title>
+	<title>SOCAR 시각화통계</title>
 
-    <!-- j Query -->
-    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<!-- j Query -->
+	<script src="/public/jquery-3.1.1.min.js"></script>
+	<script src="/public/jquery.jsonrpc.js"></script>
+	<script>
+		$(function() {
+			$.jsonRPC.setup({
+				endPoint : 'http://localhost:3000/api',
+				namespace : ''
+			});
 
-    <!-- xlsx -->
+			$("#requestButton").click(function() {
+				var message = $("#messageInput").val();
+				var method = 'echo';
+				$.jsonRPC.request(method, {
+					id: 1002,
+					params: [message],
+					success: function(data) {
+						println('정상 응답을 받았습니다!');
+						console.dir(data);
+
+						println(data.result);
+					},
+					error: function(data) {
+						println('에러 응답을 받았습니다. ㅜ');
+						console.dir(data);
+						println(data.error.message + ', ' + data.error.message);
+					}
+				});
+
+				println('[' + method + '] method로 요청을 보냈습니다.');
+			});
+		});
+
+		function println(data) {
+			$("#results").append('<p>' + data + '</p>');
+		}
+	</script>
+
+	<!-- xlsx -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.10.3/xlsx.full.min.js"></script>
 
-    <script src="http://www.chartjs.org/dist/2.7.3/Chart.bundle.js"></script>
+	<script src="http://www.chartjs.org/dist/2.7.3/Chart.bundle.js"></script>
 	<script src="http://www.chartjs.org/samples/latest/utils.js"></script>
 
 	<style>
-	canvas {
+		canvas {
 		-moz-user-select: none;
 		-webkit-user-select: none;
 		-ms-user-select: none;
 	}
 	</style>
 
-    <!-- Bootstrap core CSS -->
-    <link href="http://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootstrap core CSS -->
+	<link href="http://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom styles for this template -->
-    <link href="http://getbootstrap.com/docs/4.1/examples/dashboard/dashboard.css" rel="stylesheet">
+	<!-- Custom styles for this template -->
+	<link href="http://getbootstrap.com/docs/4.1/examples/dashboard/dashboard.css" rel="stylesheet">
 
-    <!-- d3 -->
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="https://d3js.org/d3-collection.v1.min.js"></script>
+	<!-- d3 -->
+	<script src="https://d3js.org/d3.v4.min.js"></script>
+	<script src="https://d3js.org/d3-collection.v1.min.js"></script>
 	<script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
 	<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
 	<script src="https://d3js.org/d3-request.v1.min.js"></script>
-  </head>
+</head>
 
-  <body>
-    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">SOCAR 시각화통계</a>
-      <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
-      <ul class="navbar-nav px-3">
-        <li class="nav-item text-nowrap">
-          <a class="nav-link" href="/logout">Sign out</a>
-        </li>
-      </ul>
-    </nav>
+<body>
+	<nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+		<a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">SOCAR 시각화통계</a>
+		<input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+		<ul class="navbar-nav px-3">
+			<li class="nav-item text-nowrap">
+				<a class="nav-link" href="/logout">Sign out</a>
+			</li>
+		</ul>
+	</nav>
 
-    <div class="container-fluid">
-      <div class="row">
-        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
-          <div class="sidebar-sticky">
-            <ul class="nav flex-column">
-              <li class="nav-item">
-                <a class="nav-link active" href="#">
-                  <span data-feather="home"></span>
-                  Dashboard <span class="sr-only">(current)</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </nav>
 
-        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 class="h2">10월 데이터사용량 통계</h2>
-            <div class="btn-toolbar mb-2 mb-md-0">
-              <div class="btn-group mr-2">
-                <button class="btn btn-sm btn-outline-secondary">Share</button>
-                <button class="btn btn-sm btn-outline-secondary">Export</button>
-              </div>
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle">
-                <span data-feather="calendar"></span>
-                이번달
-              </button>
-            </div>
-          </div>
+	<div class="container-fluid">
+		<div class="row">
+			<nav class="col-md-2 d-none d-md-block bg-light sidebar">
+				<div class="sidebar-sticky">
+					<ul class="nav flex-column">
+						<li class="nav-item">
+							<a class="nav-link active" href="#">
+								<span data-feather="home"></span>
+								Dashboard <span class="sr-only">(current)</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
 
-          <div id="container" style="width: 98%;">
-			<canvas id="canvas"></canvas>
-		  </div>
-			<button id="addDataset">전월 비교</button>
-			<button id="removeDataset">비교 해제</button>
+			<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+				<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+					<h2 class="h2">10월 데이터사용량 통계</h2>
+					<div class="btn-toolbar mb-2 mb-md-0">
+						<div class="btn-group mr-2">
+							<button class="btn btn-sm btn-outline-secondary">Share</button>
+							<button class="btn btn-sm btn-outline-secondary">Export</button>
+						</div>
+						<button class="btn btn-sm btn-outline-secondary dropdown-toggle">
+							<span data-feather="calendar"></span>
+							이번달
+						</button>
+					</div>
+				</div>
 
-       	<input type="file" id="my_file_input" />
-    <div id='my_file_output'></div>
-        </main>
-      </div>
-    </div>
+				<div id="container" style="width: 98%;">
+					<canvas id="canvas"></canvas>
+				</div>
+				<button id="addDataset">전월 비교</button>
+				<button id="removeDataset">비교 해제</button>
 
-    <!-- Bootstrap core JavaScript
+				<input type="file" id="my_file_input" />
+				<div id='my_file_output'></div>
+
+
+								<h3>JSON_RPC Echo테스트</h3>
+		<br>
+		<textarea name="messageInput" id="messageInput"></textarea>
+		<br>
+		<input type="button" name="requestButton" id="requestButton" value="요청하기">
+		<br>
+		<p>결과</p>
+		<div id="results"></div>
+			</main>
+		</div>
+	</div>
+	<!-- Bootstrap core JavaScript
     ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
-    <script src="http://getbootstrap.com/docs/4.1/assets/js/vendor/popper.min.js"></script>
-    <script src="http://getbootstrap.com/docs/4.1/dist/js/bootstrap.min.js"></script>
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script>
+		window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')
 
-    <!-- Icons -->
-    <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
-    <script>
-      feather.replace()
-    </script>
+	</script>
+	<script src="http://getbootstrap.com/docs/4.1/assets/js/vendor/popper.min.js"></script>
+	<script src="http://getbootstrap.com/docs/4.1/dist/js/bootstrap.min.js"></script>
 
-    <!-- Graphs
+	<!-- Icons -->
+	<script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
+	<script>
+		feather.replace()
+
+	</script>
+
+	<!-- Graphs
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
     <script>
       var ctx = document.getElementById("myChart");
@@ -140,229 +190,234 @@
     </script>
     -->
 
-<script>
+	<script>
+		d3.csv("/public/data2.csv", type, function(error, data) {
 
-	d3.csv("/public/data2.csv", type, function(error,data){
+			if (error) throw error;
 
-		if (error) throw error;
+			var section_array = new Array();
+			var pre_section = 0;
+			for (i = 150; i <= 15050; i = i + 100) {
+				var cnt = 0;
+				var cnt_last = 0;
+				var data_scale = new Object();
+				data_scale.section = i;
 
-		var section_array = new Array();
-		var pre_section = 0;
-		for(i=150; i<=15050; i = i+100){
-			var cnt = 0;
-			var cnt_last = 0;
-			var data_scale = new Object();
-			data_scale.section = i;
+				for (j = 0; j < data.length; j++) {
+					if (data_scale.section < 15050) {
+						if (data[j].usage_this_month > pre_section && data[j].usage_this_month <= data_scale.section) {
+							cnt++;
+							data_scale.section_cnt = cnt;
+						}
 
-			for(j = 0; j<data.length; j++){
-				if(data_scale.section < 15050){
-					if(data[j].usage_this_month > pre_section && data[j].usage_this_month <= data_scale.section){
-						cnt++;
-						data_scale.section_cnt = cnt;
-					}
+						if (data[j].usage_last_month > pre_section && data[j].usage_last_month <= data_scale.section) {
+							cnt_last++;
+							data_scale.section_cnt_last = cnt_last;
+						}
 
-					if(data[j].usage_last_month > pre_section && data[j].usage_last_month <= data_scale.section){
-						cnt_last++;
-						data_scale.section_cnt_last = cnt_last;
-					}
+					} else {
+						if (data[j].usage_this_month > data_scale.section) {
+							cnt++;
+							data_scale.section_cnt = cnt;
+						}
 
-				}else{
-					if(data[j].usage_this_month > data_scale.section){
-						cnt++;
-						data_scale.section_cnt = cnt;
-					}
-
-					if(data[j].usage_last_month > data_scale.section){
-						cnt_last++;
-						data_scale.section_cnt_last = cnt_last;
+						if (data[j].usage_last_month > data_scale.section) {
+							cnt_last++;
+							data_scale.section_cnt_last = cnt_last;
+						}
 					}
 				}
+				pre_section = data_scale.section;
+				section_array.push(data_scale);
 			}
-			pre_section = data_scale.section;
-			section_array.push(data_scale);
-		}
 
-		var usage_section = [];
-		var usage_section_cnt = [];
-		var usage_section_cnt_last = [];
-		section_array.forEach(function(d){
-			usage_section.push(d.section + " MB");
-			usage_section_cnt.push(d.section_cnt);
-			usage_section_cnt_last.push(d.section_cnt_last);
-		});
-
-	var MONTHS = usage_section;
-	var color = Chart.helpers.color;
-	var barChartData = {
-		labels: usage_section,
-		datasets: [{
-			label: '10월',
-			backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
-			borderColor: window.chartColors.red,
-			lineTension: 0,
-			borderWidth: 1,
-			data: usage_section_cnt
-		}]
-	};
-
-	var ctx = document.getElementById('canvas').getContext('2d');
-	window.myBar = new Chart(ctx, {
-		type: 'bar',
-		data: barChartData,
-		options: {
-			responsive: true,
-			legend: {
-				position: 'top',
-			},
-			title: {
-				display: true,
-				text: ''
-			},
-			scales: {
-				yAxes: [{
-					ticks: {
-						beginAtZero: true
-					}
-				}]
-			},
-		}
-	});
-
-	var colorNames = Object.keys(window.chartColors);
-	document.getElementById('addDataset').addEventListener('click', function() {
-		if(barChartData.datasets.length > 1){
-			return;
-		}
-		var colorName = colorNames[barChartData.datasets.length % colorNames.length];
-		var dsColor = window.chartColors[colorName];
-		var newDataset = {
-			label: '9월',
-			backgroundColor: color(dsColor).alpha(0.5).rgbString(),
-			borderColor: dsColor,
-			lineTension: 0,
-            borderWidth: 1,
-            pointBackgroundColor: '#007bff',
-			data: usage_section_cnt_last
-		};
-
-		barChartData.datasets.push(newDataset);
-		window.myBar.update();
-	});
-
-	document.getElementById('removeDataset').addEventListener('click', function() {
-		if(barChartData.datasets.length == 1){
-			return;
-		}
-		barChartData.datasets.pop();
-		window.myBar.update();
-	});
+			var usage_section = [];
+			var usage_section_cnt = [];
+			var usage_section_cnt_last = [];
+			section_array.forEach(function(d) {
+				usage_section.push(d.section + " MB");
+				usage_section_cnt.push(d.section_cnt);
+				usage_section_cnt_last.push(d.section_cnt_last);
 			});
 
-	function type(d){
-		d.phone = String(d.phone);
-		d.usage_this_month = parseFloat(d.usage_this_month);
-		d.usage_last_month = parseFloat(d.usage_last_month);
-		return d;
-	}
+			var MONTHS = usage_section;
+			var color = Chart.helpers.color;
+			var barChartData = {
+				labels: usage_section,
+				datasets: [{
+					label: '10월',
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.red,
+					lineTension: 0,
+					borderWidth: 1,
+					data: usage_section_cnt
+				}]
+			};
+
+			var ctx = document.getElementById('canvas').getContext('2d');
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: barChartData,
+				options: {
+					responsive: true,
+					legend: {
+						position: 'top',
+					},
+					title: {
+						display: true,
+						text: ''
+					},
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero: true
+							}
+						}]
+					},
+				}
+			});
+
+			var colorNames = Object.keys(window.chartColors);
+			document.getElementById('addDataset').addEventListener('click', function() {
+				if (barChartData.datasets.length > 1) {
+					return;
+				}
+				var colorName = colorNames[barChartData.datasets.length % colorNames.length];
+				var dsColor = window.chartColors[colorName];
+				var newDataset = {
+					label: '9월',
+					backgroundColor: color(dsColor).alpha(0.5).rgbString(),
+					borderColor: dsColor,
+					lineTension: 0,
+					borderWidth: 1,
+					pointBackgroundColor: '#007bff',
+					data: usage_section_cnt_last
+				};
+
+				barChartData.datasets.push(newDataset);
+				window.myBar.update();
+			});
+
+			document.getElementById('removeDataset').addEventListener('click', function() {
+				if (barChartData.datasets.length == 1) {
+					return;
+				}
+				barChartData.datasets.pop();
+				window.myBar.update();
+			});
+		});
+
+		function type(d) {
+			d.phone = String(d.phone);
+			d.usage_this_month = parseFloat(d.usage_this_month);
+			d.usage_last_month = parseFloat(d.usage_last_month);
+			return d;
+		}
+
 	</script>
 
-<script>
-var rABS = true; // T : 바이너리, F : 어레이 버퍼
+	<script>
+		var rABS = true; // T : 바이너리, F : 어레이 버퍼
 
-// 어레이 버퍼를 처리한다 ( 오직 readAsArrayBuffer 데이터만 가능하다 )
-function fixdata(data) {
-    var o = "", l = 0, w = 10240;
-    for(; l<data.byteLength/w; ++l) o+=String.fromCharCode.apply(null,new Uint8Array(data.slice(l*w,l*w+w)));
-    o+=String.fromCharCode.apply(null, new Uint8Array(data.slice(l*w)));
-    return o;
-}
+		// 어레이 버퍼를 처리한다 ( 오직 readAsArrayBuffer 데이터만 가능하다 )
+		function fixdata(data) {
+			var o = "",
+				l = 0,
+				w = 10240;
+			for (; l < data.byteLength / w; ++l) o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w, l * w + w)));
+			o += String.fromCharCode.apply(null, new Uint8Array(data.slice(l * w)));
+			return o;
+		}
 
-// 데이터를 바이너리 스트링으로 얻는다.
-function getConvertDataToBin($data){
-    var arraybuffer = $data;
-    var data = new Uint8Array(arraybuffer);
-    var arr = new Array();
-    for(var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
-    var bstr = arr.join("");
+		// 데이터를 바이너리 스트링으로 얻는다.
+		function getConvertDataToBin($data) {
+			var arraybuffer = $data;
+			var data = new Uint8Array(arraybuffer);
+			var arr = new Array();
+			for (var i = 0; i != data.length; ++i) arr[i] = String.fromCharCode(data[i]);
+			var bstr = arr.join("");
 
-    return bstr;
-}
-function handleFile(e) {
-    var files = e.target.files;
-    var i,f;
-    for (i = 0; i != files.length; ++i) {
-        f = files[i];
-        var reader = new FileReader();
-        var name = f.name;
+			return bstr;
+		}
 
-        reader.onload = function(e) {
-            var data = e.target.result;
+		function handleFile(e) {
+			var files = e.target.files;
+			var i, f;
+			for (i = 0; i != files.length; ++i) {
+				f = files[i];
+				var reader = new FileReader();
+				var name = f.name;
 
-            var workbook;
+				reader.onload = function(e) {
+					var data = e.target.result;
 
-            if(rABS) {
-                /* if binary string, read with type 'binary' */
-                workbook = XLSX.read(data, {type: 'binary'});
-            } else {
-                /* if array buffer, convert to base64 */
-                var arr = fixdata(data);
-                workbook = XLSX.read(btoa(arr), {type: 'base64'});
-            }//end. if
+					var workbook;
 
-            /* 워크북 처리 */
-			//var first_sheet_name = workbook.SheetNames[0];
+					if (rABS) {
+						/* if binary string, read with type 'binary' */
+						workbook = XLSX.read(data, {
+							type: 'binary'
+						});
+					} else {
+						/* if array buffer, convert to base64 */
+						var arr = fixdata(data);
+						workbook = XLSX.read(btoa(arr), {
+							type: 'base64'
+						});
+					} //end. if
 
-			/* Get worksheet */
-			var worksheet = workbook.Sheets[workbook.SheetNames[0]];
+					/* 워크북 처리 */
+					//var first_sheet_name = workbook.SheetNames[0];
 
-			var cell_date_info = worksheet['U'+2].v;
+					/* Get worksheet */
+					var worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
-			var patten_trim = / /gi;
-			var year = cell_date_info.substring(0, cell_date_info.indexOf('.')).replace(/ /gi, "");
-			year = year.replace(patten_trim, "");
-			var month = cell_date_info.substring(cell_date_info.indexOf('.')+1, cell_date_info.lastIndexOf('.')).replace(/ /gi, "");
-			month = month.replace(patten_trim, "");
+					var cell_date_info = worksheet['U' + 2].v;
 
-			console.log("year : " + year + "month : " + month);
+					var patten_trim = / /gi;
+					var year = cell_date_info.substring(0, cell_date_info.indexOf('.')).replace(/ /gi, "");
+					year = year.replace(patten_trim, "");
+					var month = cell_date_info.substring(cell_date_info.indexOf('.') + 1, cell_date_info.lastIndexOf('.')).replace(/ /gi, "");
+					month = month.replace(patten_trim, "");
 
-			for(var i = 5; i < 100; i++){
-				/* Find desired cell */
-				var cell_phone = worksheet['B'+i];
-				var cell_usage = worksheet['AA'+i];
+					console.log("year : " + year + "month : " + month);
 
-				/* Get the value */
-				var phone = (cell_phone ? cell_phone.v : undefined);
-				var usage = (cell_usage ? cell_usage.v : undefined);
+					for (var i = 5; i < 100; i++) {
+						/* Find desired cell */
+						var cell_phone = worksheet['B' + i];
+						var cell_usage = worksheet['AA' + i];
 
-				if((phone != undefined && phone != "고객번호") &&
-				   (usage != undefined && usage.length > 0)){
-					usage = usage.replace(/MB|\,/gi, '');
-					console.log('phone : ' + phone + '  usage : ' + usage);
-				}
+						/* Get the value */
+						var phone = (cell_phone ? cell_phone.v : undefined);
+						var usage = (cell_usage ? cell_usage.v : undefined);
+
+						if ((phone != undefined && phone != "고객번호") &&
+							(usage != undefined && usage.length > 0)) {
+							usage = usage.replace(/MB|\,/gi, '');
+							console.log('phone : ' + phone + '  usage : ' + usage);
+						}
+					}
+				}; //end onload
+
+				if (rABS) reader.readAsBinaryString(f);
+				else reader.readAsArrayBuffer(f);
+
+			} //end. for
+		}
+
+//		var input_dom_element;
+//		$(function() {
+//			input_dom_element = document.getElementById('my_file_input');
+//			if (input_dom_element.addEventListener) {
+//				input_dom_element.addEventListener('change', handleFile, false);
+//			}
+//		});
 
 
-			}
+		//http://sheetjs.com/
+		//https://github.com/SheetJS/js-xls
 
-
-        }; //end onload
-
-        if(rABS) reader.readAsBinaryString(f);
-        else reader.readAsArrayBuffer(f);
-
-    }//end. for
-}
-
-	var input_dom_element;
-
-$(function() {
-    input_dom_element = document.getElementById('my_file_input');
-    if(input_dom_element.addEventListener) {
-        input_dom_element.addEventListener('change', handleFile, false);
-    }
-});
-
-//http://sheetjs.com/
-//https://github.com/SheetJS/js-xls
-</script>
+	</script>
 </body>
+
 </html>

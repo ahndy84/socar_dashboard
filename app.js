@@ -31,9 +31,11 @@ var expressSession = require('express-session');
 var passport = require('passport');
 var flash = require('connect-flash');
 
+// 익스프레스 객체 생성
+var app = express();
 
 // 모듈로 분리한 설정 파일 불러오기
-var config = require('./config');
+var config = require('./config/config');
 
 // 모듈로 분리한 데이터베이스 파일 불러오기
 var database = require('./database/database');
@@ -45,8 +47,18 @@ var route_loader = require('./routes/route_loader');
 var configPassport = require('./config/passport');
 configPassport(app, passport);
 
-// 익스프레스 객체 생성
-var app = express();
+//JSON_RCP 핸들러 로더
+var handler_loader = require('./handlers/handler_loader');
+
+//json-RPC 사용
+var jayson = require('jayson');
+
+
+
+//JSON-RPC 핸들러 정보를 읽어 들여 핸들러 경로 설정
+var jsonrpc_api_path = config.jsonrpc_api_path || '/api';
+handler_loader.init(jayson, app, jsonrpc_api_path);
+console.log('JSON_RPC를 ['+jsonrpc_api_path+'] 패스에서 사용하도록 설정함.');
 
 
 //===== 뷰 엔진 설정 =====//
